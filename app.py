@@ -55,6 +55,14 @@ if st.session_state['logged_in']:
         @st.cache_data
         def load_and_preprocess_data(uploaded_file, file_type):
             try:
+                # Handle the case when openpyxl is missing for .xlsx files
+                if file_type == "xlsx":
+                    try:
+                        import openpyxl  # Attempt to import openpyxl
+                    except ImportError:
+                        st.error("Missing optional dependency 'openpyxl'. Please install it using 'pip install openpyxl'.")
+                        return None
+                
                 # Load data based on file type with encoding handling
                 if file_type == "csv":
                     data = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
