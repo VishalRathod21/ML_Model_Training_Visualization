@@ -18,7 +18,7 @@ import io
 # App Title
 st.markdown(
     "<h1 style='text-align: center; font-size: 3em; font-family: Arial, sans-serif;'>"
-    "<span style='color: yellow;'>Automated</span> Machine Learning Training Model Dashboard 🤖📊"
+    "<span style='color: yellow;'>Automated</span> Machine Learning Training Model 🤖📊"
     "</h1>", unsafe_allow_html=True
 )
 st.markdown("### A User-Friendly Tool for Model Training and Visualization")
