@@ -1,25 +1,33 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
-from sklearn.svm import SVC, SVR
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import accuracy_score, classification_report, mean_squared_error, r2_score, confusion_matrix
 import pickle
 import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
 import matplotlib.pyplot as plt
+import io
+
 
 # App Title
-st.markdown("<h1 style='text-align: center; font-size: 3em; background: -webkit-linear-gradient(45deg, #E6194B, #3CB44B, #FFE119, #4363D8, #F58231, #911EB4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>Automated Machine Learning Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; font-size: 3em; font-family: Arial, sans-serif;'>"
+    "<span style='color: yellow;'>Automated</span> Machine Learning Dashboard 🚀🤖📊"
+    "</h1>", unsafe_allow_html=True
+)
 st.markdown("### A User-Friendly Tool for Model Training and Visualization")
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown(
+    "This portal offers an easy way to upload datasets, preprocess data, visualize trends, and train machine learning models. "
+    "Whether you're a beginner or an expert, explore data, select features, train models, evaluate performance, and save your models. "
+    "Get started with just a few clicks!"
+)
 
 # Authentication State
 if 'logged_in' not in st.session_state:
@@ -52,7 +60,8 @@ if st.session_state['logged_in']:
         st.sidebar.warning("Logged out. Please log in again.")
 
     # Upload Dataset
-    st.markdown("<h2 style='background: -webkit-linear-gradient(45deg, #E6194B, #3CB44B, #FFE119, #4363D8, #F58231, #911EB4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>Upload Your Dataset</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='background: -webkit-linear-gradient(45deg, #4A90E2, #4A90E2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>Upload Your Dataset</h2>", unsafe_allow_html=True)
+
     st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown("**Description**: Upload a CSV, Excel, JSON, or Parquet file that contains your dataset. The dataset will be preprocessed, including handling missing values and scaling numerical features.")
     uploaded_file = st.file_uploader("Upload your dataset", type=["csv", "xlsx", "json", "parquet"])
@@ -106,22 +115,66 @@ if st.session_state['logged_in']:
         if data is not None:
             st.write("Processed Data Preview:", data.head())
 
+            # Exploratory Data Analysis (EDA)
+            st.markdown("### Exploratory Data Analysis (EDA)")
+            st.markdown("**Description**: Perform basic analysis like statistics, distribution, and pairwise relationships.")
+            if st.checkbox("Show Statistics"):
+                st.write(data.describe())
+
+            if st.checkbox("Show Correlation Heatmap"):
+                corr = data.corr()
+                fig, ax = plt.subplots(figsize=(10, 8))  # Create figure and axis objects
+                sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", ax=ax)
+                st.pyplot(fig)  # Pass the figure object to st.pyplot()
+
+
+            # Handle Missing Values, Duplicates, and Data Scaling
+            st.markdown("### Data Preprocessing Options")
+            st.markdown("**Description**: Handle missing values, remove duplicates, and more.")
+            
+            if st.checkbox("Remove Duplicates"):
+                before_rows = data.shape[0]
+                data = data.drop_duplicates()
+                after_rows = data.shape[0]
+                st.write(f"Removed {before_rows - after_rows} duplicate rows.")
+                
+            if st.checkbox("Handle Missing Values"):
+                missing_strategy = st.selectbox("Choose Strategy for Missing Values", ["Mean", "Median", "Most Frequent"])
+                imputer = SimpleImputer(strategy=missing_strategy.lower())
+                numeric_data = data.select_dtypes(include=['float64', 'int64'])  # Define numeric_data here
+                data[numeric_data.columns] = imputer.fit_transform(data[numeric_data.columns])
+                st.write("Missing values handled using", missing_strategy)
+
+            # Feature Selection/Engineering
+            st.markdown("### Feature Engineering and Selection")
+            st.markdown("**Description**: Feature selection and importance visualization.")
+            if st.checkbox("Show Feature Importance (Random Forest)"):
+
+                target_column = st.selectbox("Select Target Column for Feature Importance", data.columns)
+                X = data.drop(columns=[target_column])
+                y = data[target_column]
+                model = RandomForestClassifier() if y.dtype == 'int64' else RandomForestRegressor()
+                model.fit(X, y)
+                feature_importance = model.feature_importances_
+                importance_df = pd.DataFrame({
+                    'Feature': X.columns,
+                    'Importance': feature_importance
+                }).sort_values(by='Importance', ascending=False)
+                st.write(importance_df)
+
             # Model Selection
-            st.markdown("Model Selection")
-            st.markdown("**Description**: Select the model type you want to train, and choose the target column. The models available include Logistic Regression, Linear Regression, Random Forest, SVM, Decision Tree, KNN, and Gradient Boosting.")
-            target_column = st.selectbox("Select Target Column", data.columns)
-            model_type = st.selectbox("Select Model Type", ['Logistic Regression', 'Linear Regression', 'Random Forest', 'SVM', 'Decision Tree', 'KNN', 'Gradient Boosting'])
+            st.markdown("### Model Selection")
+            model_type = st.selectbox("Select Model Type", ['Linear Regression', 'Logistic Regression', 'Random Forest'])
 
             # Hyperparameters for Random Forest
             if model_type == 'Random Forest':
                 n_estimators = st.slider("Number of Estimators", 10, 200, 100)
                 max_depth = st.slider("Max Depth", 1, 20, 10)
-            elif model_type == 'Gradient Boosting':
-                n_estimators = st.slider("Number of Estimators", 10, 200, 100)
-                learning_rate = st.slider("Learning Rate", 0.01, 0.5, 0.1)
 
-            # Model Training Function
-            def train_model(data, target_column, model_type):
+            # Model Training
+            st.markdown("### Train Model")
+            if st.button("Train Model"):
+                target_column = st.selectbox("Select Target Column", data.columns)
                 X = data.drop(columns=[target_column])
                 y = data[target_column]
 
@@ -132,73 +185,46 @@ if st.session_state['logged_in']:
                     model = LogisticRegression()
                 elif model_type == 'Random Forest':
                     model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth) if y.dtype == 'int64' else RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth)
-                elif model_type == 'SVM':
-                    model = SVC() if y.dtype == 'int64' else SVR()
-                elif model_type == 'Decision Tree':
-                    model = DecisionTreeClassifier() if y.dtype == 'int64' else DecisionTreeRegressor()
-                elif model_type == 'KNN':
-                    model = KNeighborsClassifier() if y.dtype == 'int64' else KNeighborsRegressor()
-                elif model_type == 'Gradient Boosting':
-                    model = GradientBoostingClassifier(n_estimators=n_estimators, learning_rate=learning_rate) if y.dtype == 'int64' else GradientBoostingRegressor(n_estimators=n_estimators, learning_rate=learning_rate)
 
                 # Train Model
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
+                try:
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
 
-                # Evaluation
-                if y.dtype in ['float64', 'int64']:  # Regression
-                    mse = mean_squared_error(y_test, y_pred)
-                    r2 = r2_score(y_test, y_pred)
-                    st.write(f"MSE: {mse:.2f}", f"R2: {r2:.2f}")
-                else:  # Classification
-                    accuracy = accuracy_score(y_test, y_pred)
-                    st.write(f"Accuracy: {accuracy * 100:.2f}%")
-                    st.text(classification_report(y_test, y_pred))
+                    # Evaluation
+                    if y.dtype in ['float64', 'int64']:  # Regression
+                        mse = mean_squared_error(y_test, y_pred)
+                        r2 = r2_score(y_test, y_pred)
+                        st.write(f"MSE: {mse:.2f}", f"R2: {r2:.2f}")
+                    else:  # Classification
+                        accuracy = accuracy_score(y_test, y_pred)
+                        st.write(f"Accuracy: {accuracy * 100:.2f}%")
+                        st.text(classification_report(y_test, y_pred))
 
-                return model, X_test, y_test, y_pred
+                    # Visualizations
+                    # Linear Regression Fit Line
+                    if model_type == 'Linear Regression':
+                        fig, ax = plt.subplots()
+                        ax.scatter(y_test, y_pred)
+                        ax.plot([y_test.min(), y_test.max()], [y_pred.min(), y_pred.max()], color='red', lw=2)
+                        st.pyplot(fig)
 
-            model, X_test, y_test, y_pred = train_model(data, target_column, model_type)
+                    # Confusion Matrix (for Classification)
+                    if model_type != 'Linear Regression':
+                        cm = confusion_matrix(y_test, y_pred)
+                        fig, ax = plt.subplots()
+                        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+                        st.pyplot(fig)
 
-            # Confusion Matrix (for classification)
-            if model_type in ['Logistic Regression', 'Random Forest', 'SVM', 'Decision Tree', 'KNN', 'Gradient Boosting']:
-                cm = confusion_matrix(y_test, y_pred)
-                fig_cm = plt.figure(figsize=(8, 6))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
-                plt.xlabel('Predicted')
-                plt.ylabel('True')
-                st.pyplot(fig_cm)
+                    # Model Saving
+                    import joblib
+                    model_filename = f"{model_type.replace(' ', '_')}_model.pkl"
+                    joblib.dump(model, model_filename)
+                    st.success(f"Model trained successfully! You can download it below.")
 
-            # Feature Importance (for Random Forest and Gradient Boosting)
-            if model_type in ['Random Forest', 'Gradient Boosting']:
-                feature_importances = model.feature_importances_
-                features = X_test.columns
-                fig_fi = px.bar(x=features, y=feature_importances, labels={'x': 'Features', 'y': 'Importance'}, title="Feature Importance")
-                st.plotly_chart(fig_fi)
-
-            # Residual Plot (for regression models)
-            if model_type in ['Linear Regression', 'Random Forest', 'SVR', 'Decision Tree', 'KNN', 'Gradient Boosting']:
-                residuals = y_test - y_pred
-                fig_res = plt.figure(figsize=(8, 6))
-                sns.scatterplot(x=y_pred, y=residuals)
-                plt.axhline(y=0, color='r', linestyle='--')
-                plt.xlabel('Predicted Values')
-                plt.ylabel('Residuals')
-                st.pyplot(fig_res)
-
-            # Save Model
-            st.markdown("Save Your Trained Model")
-            st.markdown("**Description**: Once you've trained your model, you can save it as a `.pkl` file. This allows you to reuse the model later without retraining it.")
-            if st.button("Save Model"):
-                with open("trained_model.pkl", "wb") as file:
-                    pickle.dump(model, file)
-                st.success("Model saved successfully!")
-
-            # Save Processed Data
-            st.markdown("Save Processed Data")
-            st.markdown("**Description**: Save the preprocessed data after cleaning, encoding, and scaling. This can be useful for future use or further analysis.")
-            if st.button("Save Processed Data"):
-                data.to_csv("processed_data.csv", index=False)
-                st.success("Data saved successfully!")
-else:
-    st.sidebar.warning("Please log in to proceed.")
+                    # Model Download Button
+                    st.download_button("Download Trained Model", model_filename, file_name=model_filename)
+                    
+                except Exception as e:
+                    st.error(f"Error during model training: {e}")
