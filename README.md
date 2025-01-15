@@ -98,21 +98,6 @@ To run this application locally, follow these steps:
 - **Logistic Regression**
 - **Linear Regression**
 - **Random Forest**
-- **SVM (Support Vector Machines)**
-- **Decision Tree**
-- **K-Nearest Neighbors (KNN)**
-- **Gradient Boosting**
-
-## How to Use
-1. **Login:** Use the provided credentials (`admin`/`admin123` or `user`/`user123`) to log in.
-2. **Upload Dataset:** Select your dataset file (CSV, Excel, JSON, or Parquet) and upload it. The system will automatically preprocess the data.
-3. **Select Model:** Choose the model you want to train and the target column from your dataset.
-4. **Train and Evaluate:** The app will train the model and display performance metrics, such as accuracy, MSE, R2, and more.
-5. **Visualize:** You can view visualizations like confusion matrices, feature importances, and residual plots.
-6. **Save Model:** After training, save your model as a `.pkl` file for future use.
-7. **Save Processed Data:** Save the preprocessed data as a CSV file.
-
-
 
 ## Contributing
 Feel free to fork the repository and submit pull requests. If you have suggestions or improvements, please open an issue or a pull request.
