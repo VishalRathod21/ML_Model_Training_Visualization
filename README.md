@@ -1,18 +1,72 @@
-# Automated Machine Learning Dashboard
+# Automated Machine Learning Dashboard 🚀🤖📊
 
 ## Overview
-This web application is a user-friendly tool that allows users to upload a dataset, preprocess the data, select machine learning models, train the models, evaluate their performance, and visualize results. It supports a variety of algorithms for classification and regression tasks, including Logistic Regression, Linear Regression, Random Forest, Support Vector Machines (SVM), Decision Trees, K-Nearest Neighbors (KNN), and Gradient Boosting.
+The **Automated Machine Learning Dashboard** is a user-friendly tool that simplifies the process of exploring datasets, preprocessing data, and training machine learning models. This tool is ideal for beginners and experts alike, offering a guided interface to go from raw data to trained models in just a few clicks.
+
+---
 
 ## Features
-- **Login System:** Secure login for users with different access levels.
-- **Dataset Upload:** Users can upload datasets in CSV, Excel, JSON, or Parquet formats.
-- **Data Preprocessing:** Automatic handling of missing values, categorical encoding, and feature scaling.
-- **Model Selection:** Choose from various machine learning algorithms (Logistic Regression, Linear Regression, Random Forest, SVM, Decision Trees, KNN, Gradient Boosting).
-- **Model Training:** Train models on the uploaded dataset and evaluate performance with metrics like accuracy, MSE, and R2 score.
-- **Evaluation Metrics:** View confusion matrix (for classification models), feature importance (for Random Forest and Gradient Boosting), and residual plots (for regression models).
-- **Model Saving:** Save trained models as `.pkl` files for future use.
-- **Data Saving:** Save processed data as a CSV file for further use or analysis.
+- **Authentication**: Secure login functionality for personalized access.
+- **Data Upload**: Supports CSV, Excel, JSON, and Parquet files.
+- **Data Preprocessing**: 
+  - Handles missing values
+  - Encodes categorical features
+  - Scales numerical features
+  - Removes duplicate rows
+- **Exploratory Data Analysis (EDA)**:
+  - Statistical summaries
+  - Correlation heatmaps
+  - Distribution visualizations
+- **Feature Engineering**:
+  - Feature importance analysis with Random Forest
+- **Model Training**:
+  - Supports Linear Regression, Logistic Regression, and Random Forest
+  - Hyperparameter tuning for Random Forest
+  - Handles both classification and regression tasks
+- **Model Evaluation**:
+  - Metrics like accuracy, MSE, R², and classification reports
+  - Confusion matrix visualizations
+  - Regression fit line plots
+- **Model Export**: Save trained models as `.pkl` files for future use.
 
+---
+
+## How to Use
+
+### 1. Login
+- Enter your username and password in the sidebar to log in.
+- Default credentials:
+  - Username: `admin`, Password: `admin123`
+  - Username: `user`, Password: `user123`
+
+### 2. Upload Dataset
+- Upload your dataset in CSV, Excel, JSON, or Parquet format.
+- The app will preprocess your data, handling missing values, encoding categorical variables, and scaling numerical features.
+
+### 3. Explore Data
+- View statistical summaries and generate visualizations such as correlation heatmaps.
+
+### 4. Preprocess Data
+- Remove duplicate rows or handle missing values using Mean, Median, or Most Frequent strategies.
+
+### 5. Train Models
+- Select a target column and choose one of the available models:
+  - **Linear Regression** for predicting continuous values.
+  - **Logistic Regression** for binary classification.
+  - **Random Forest** for both regression and classification.
+- Customize hyperparameters for Random Forest if selected.
+
+### 6. Evaluate Models
+- View performance metrics:
+  - **Regression**: Mean Squared Error (MSE), R² Score
+  - **Classification**: Accuracy, Confusion Matrix, and Classification Report
+- Generate and view relevant visualizations.
+
+### 7. Save and Download Models
+- Save the trained model as a `.pkl` file.
+- Use the "Download Trained Model" button to download the file for deployment or future use.
+
+---
 ## Installation
 To run this application locally, follow these steps:
 
