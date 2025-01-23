@@ -1,4 +1,4 @@
-# MLFlowX: Automating Machine Learning at Your Fingertips🤖📊 🚀🤖📊
+# MLFlowX: Automating Machine Learning at Your Fingertips🤖📊
 
 ## Overview
 The **Machine Learning Training Model Dashboard** is a user-friendly tool that simplifies the process of exploring datasets, preprocessing data, and training machine learning models. This tool is ideal for beginners and experts alike, offering a guided interface to go from raw data to trained models in just a few clicks.
