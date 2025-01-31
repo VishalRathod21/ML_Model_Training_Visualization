@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 import seaborn as sns
 import matplotlib.pyplot as plt
 from io import StringIO
-import stats
+from scipy import stats
 import base64
 import warnings
 warnings.filterwarnings('ignore')
