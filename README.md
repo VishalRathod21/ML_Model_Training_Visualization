@@ -1,70 +1,61 @@
-# MLFlowX: Automating Machine Learning at Your Fingertips🤖📊
+# MLFlowX: Automating Machine Learning at Your Fingertips 🤖📊
 
-## Overview
-The **Machine Learning Training Model Dashboard** is a user-friendly tool that simplifies the process of exploring datasets, preprocessing data, and training machine learning models. This tool is ideal for beginners and experts alike, offering a guided interface to go from raw data to trained models in just a few clicks.
-
----
-
-## Features
-- **Authentication**: Secure login functionality for personalized access.
-- **Data Upload**: Supports CSV, Excel, JSON, and Parquet files.
-- **Data Preprocessing**: 
-  - Handles missing values
-  - Encodes categorical features
-  - Scales numerical features
-  - Removes duplicate rows
-- **Exploratory Data Analysis (EDA)**:
-  - Statistical summaries
-  - Correlation heatmaps
-  - Distribution visualizations
-- **Feature Engineering**:
-  - Feature importance analysis with Random Forest
-- **Model Training**:
-  - Supports Linear Regression, Logistic Regression, and Random Forest
-  - Hyperparameter tuning for Random Forest
-  - Handles both classification and regression tasks
-- **Model Evaluation**:
-  - Metrics like accuracy, MSE, R², and classification reports
-  - Confusion matrix visualizations
-  - Regression fit line plots
-- **Model Export**: Save trained models as `.pkl` files for future use.
+MLFlowX is a user-friendly web application built with **Streamlit** that simplifies the process of data preprocessing, model training, evaluation, and deployment. Whether you're a beginner or an expert, MLFlowX provides an intuitive interface to explore datasets, preprocess data, train machine learning models, and deploy them with ease.
 
 ---
 
-## How to Use
+## Features 🌟
 
-### 1. Login
-- Enter your username and password in the sidebar to log in.
-- Default credentials:
-  - Username: `admin`, Password: `admin123`
-  - Username: `user`, Password: `user123`
+1. **Data Upload & Exploration**:
+   - Upload datasets in various formats (CSV, Excel, JSON, Parquet).
+   - Preview and explore data with summary statistics and missing value analysis.
 
-### 2. Upload Dataset
-- Upload your dataset in CSV, Excel, JSON, or Parquet format.
-- The app will preprocess your data, handling missing values, encoding categorical variables, and scaling numerical features.
+2. **Data Preprocessing**:
+   - Handle missing values using methods like Mean, Median, Mode, KNN Imputer, and more.
+   - Detect and handle outliers using IQR or Z-Score.
+   - Apply feature scaling techniques like Standard Scaler, MinMax Scaler, and Robust Scaler.
 
-### 3. Explore Data
-- View statistical summaries and generate visualizations such as correlation heatmaps.
+3. **Feature Engineering**:
+   - Perform feature transformations like Log Transform, Square Root, and Polynomial.
+   - Reduce dimensionality using PCA or feature importance.
 
-### 4. Preprocess Data
-- Remove duplicate rows or handle missing values using Mean, Median, or Most Frequent strategies.
+4. **Model Training**:
+   - Train models for Classification, Regression, and Clustering tasks.
+   - Supports models like Logistic Regression, Random Forest, SVM, Gradient Boosting, K-Means, and more.
+   - Tune hyperparameters and evaluate models using cross-validation.
 
-### 5. Train Models
-- Select a target column and choose one of the available models:
-  - **Linear Regression** for predicting continuous values.
-  - **Logistic Regression** for binary classification.
-  - **Random Forest** for both regression and classification.
-- Customize hyperparameters for Random Forest if selected.
+5. **Model Evaluation**:
+   - Visualize model performance with metrics like Accuracy, MSE, R2 Score, and Silhouette Score.
+   - Explain model predictions using SHAP, Feature Importance, and Partial Dependence Plots.
 
-### 6. Evaluate Models
-- View performance metrics:
-  - **Regression**: Mean Squared Error (MSE), R² Score
-  - **Classification**: Accuracy, Confusion Matrix, and Classification Report
-- Generate and view relevant visualizations.
+6. **Model Deployment**:
+   - Export trained models as `.pkl` files.
+   - Generate FastAPI code for deploying models as REST APIs.
 
-### 7. Save and Download Models
-- Save the trained model as a `.pkl` file.
-- Use the "Download Trained Model" button to download the file for deployment or future use.
+---
+
+## How to Use 🛠️
+
+1. **Login**:
+   - Use the default credentials (`admin:admin123` or `user:user123`) to log in.
+
+2. **Data Upload**:
+   - Navigate to the **Data Upload** page and upload your dataset.
+
+3. **Data Preprocessing**:
+   - Go to the **Data Preprocessing** page to handle missing values, outliers, and scaling.
+
+4. **Feature Engineering**:
+   - Visit the **Feature Engineering** page to transform features or reduce dimensionality.
+
+5. **Model Training**:
+   - Head to the **Model Training** page, select your target column, and train a model.
+
+6. **Model Evaluation**:
+   - Evaluate your model's performance and interpret predictions on the **Model Evaluation** page.
+
+7. **Model Deployment**:
+   - Export your trained model or generate FastAPI code for deployment on the **Deployment** page.
 
 ---
 ## Installation
