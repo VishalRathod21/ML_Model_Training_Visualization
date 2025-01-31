@@ -2,8 +2,9 @@ streamlit
 pandas
 numpy
 scikit-learn
+shap
 plotly
 seaborn
 matplotlib
-openpyxl
 joblib
+openpyxl
