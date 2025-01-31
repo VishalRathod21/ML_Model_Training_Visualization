@@ -86,9 +86,21 @@ To run this application locally, follow these steps:
 - **Pickle** - For saving and loading models.
 
 ## Model Types Supported
-- **Logistic Regression**
-- **Linear Regression**
-- **Random Forest**
+ 1. Classification Models
+-- Logistic Regression
+-- Random Forest Classifier
+-- Support Vector Machine (SVM)
+-- Gradient Boosting Classifier
+
+ 2. Regression Models
+-- Linear Regression
+-- Random Forest Regressor
+-- Support Vector Regressor (SVR)
+-- Gradient Boosting Regressor
+
+3. Clustering Models
+-- K-Means Clustering
+-- DBSCAN
 
 ## Contributing
 Feel free to fork the repository and submit pull requests. If you have suggestions or improvements, please open an issue or a pull request.
