@@ -11,7 +11,7 @@ from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import RFE, SelectFromModel
 from sklearn.metrics import (accuracy_score, classification_report, mean_squared_error, 
-                            r2_score, confusion_matrix, silhouette_score, mean_absolute_error)
+                            r2_score, confusion_matrix, silhouette_score, mean_absolute_error, roc_curve, auc)
 import shap
 import joblib
 import plotly.express as px
@@ -34,6 +34,8 @@ if 'data' not in st.session_state:
     st.session_state['data'] = None
 if 'model' not in st.session_state:
     st.session_state['model'] = None
+if 'user_role' not in st.session_state:
+    st.session_state['user_role'] = None
 
 # -------------------- Header --------------------
 st.markdown(
@@ -49,18 +51,20 @@ st.markdown(
     "Get started with just a few clicks!"
 )
 
-
 # -------------------- Sidebar Login --------------------
-users = {'admin': 'admin123', 'user': 'user123'}
+users = {'admin': {'password': 'admin123', 'role': 'admin'}, 
+         'user': {'password': 'user123', 'role': 'user'}}
+
 if not st.session_state['logged_in']:
     with st.sidebar:
         st.title("Login")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         if st.button("Login"):
-            if username in users and users[username] == password:
+            if username in users and users[username]['password'] == password:
                 st.session_state['logged_in'] = True
                 st.session_state['username'] = username
+                st.session_state['user_role'] = users[username]['role']
                 st.success(f"Welcome {username}!")
             else:
                 st.error("Invalid credentials")
@@ -73,13 +77,14 @@ if st.session_state['logged_in']:
         st.title(f"Welcome {st.session_state['username']}")
         if st.button("Logout"):
             st.session_state['logged_in'] = False
+            st.session_state['user_role'] = None
             st.experimental_rerun()
         
         st.markdown("---")
         st.header("Navigation")
         app_page = st.radio("Go to", ["Data Upload", "Data Preprocessing", 
                                     "Feature Engineering", "Model Training", 
-                                    "Model Evaluation", "Deployment"])
+                                    "Model Evaluation", "Deployment", "Export & Reporting"])
 
     # -------------------- Data Upload Page --------------------
     if app_page == "Data Upload":
@@ -127,6 +132,21 @@ if st.session_state['logged_in']:
                     missing["Percentage"] = (missing["Missing Values"] / len(df)) * 100
                     st.write(missing)
 
+                # -------------------- Data Visualization Enhancements --------------------
+                with st.expander("Interactive Data Visualization"):
+                    st.subheader("Scatter Plot")
+                    x_axis = st.selectbox("X-axis", df.columns)
+                    y_axis = st.selectbox("Y-axis", df.columns)
+                    color_by = st.selectbox("Color by", [None] + df.columns.tolist())
+                    fig = px.scatter(df, x=x_axis, y=y_axis, color=color_by)
+                    st.plotly_chart(fig)
+                    
+                    st.subheader("Correlation Heatmap")
+                    numeric_cols = df.select_dtypes(include=np.number).columns
+                    corr = df[numeric_cols].corr()
+                    fig = px.imshow(corr, text_auto=True, color_continuous_scale='Viridis')
+                    st.plotly_chart(fig)
+
     # -------------------- Data Preprocessing Page --------------------
     elif app_page == "Data Preprocessing":
         st.header("🧹 Data Preprocessing")
@@ -139,7 +159,10 @@ if st.session_state['logged_in']:
         with st.expander("Handle Missing Values"):
             st.subheader("Missing Value Treatment")
             missing_method = st.selectbox("Imputation Method", 
-                ["Drop NA", "Mean", "Median", "Mode", "KNN Imputer", "MICE"])
+                ["Drop NA", "Mean", "Median", "Mode", "KNN Imputer", "MICE", "Custom Value"])
+            
+            if missing_method == "Custom Value":
+                custom_value = st.text_input("Enter custom value for imputation")
             
             if st.button("Apply Missing Value Treatment"):
                 if missing_method == "Drop NA":
@@ -150,6 +173,8 @@ if st.session_state['logged_in']:
                 elif missing_method == "KNN Imputer":
                     imputer = KNNImputer(n_neighbors=5)
                     df = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
+                elif missing_method == "Custom Value":
+                    df = df.fillna(custom_value)
                 
                 st.session_state['data'] = df
                 st.success("Missing values handled!")
@@ -437,3 +462,38 @@ if st.session_state['logged_in']:
                     return {{"prediction": prediction.tolist()}}
                 """
                 st.download_button("Download API Code", api_code, file_name="api.py")
+
+    # -------------------- Export & Reporting Page --------------------
+    elif app_page == "Export & Reporting":
+        st.header("📤 Export & Reporting")
+        if st.session_state['data'] is None:
+            st.warning("Upload data first!")
+            st.stop()
+        
+        df = st.session_state['data']
+        
+        st.subheader("Export Data")
+        export_format = st.selectbox("Select Export Format", ["CSV", "Excel", "JSON"])
+        export_name = st.text_input("Export File Name", "exported_data")
+        
+        if st.button("Export Data"):
+            if export_format == "CSV":
+                df.to_csv(f"{export_name}.csv", index=False)
+            elif export_format == "Excel":
+                df.to_excel(f"{export_name}.xlsx", index=False)
+            elif export_format == "JSON":
+                df.to_json(f"{export_name}.json", orient="records")
+            st.success(f"Data exported as {export_name}.{export_format.lower()}")
+
+        st.subheader("Generate Report")
+        if st.button("Generate Report"):
+            report = f"""
+            # MLFlowX Report
+            ## Dataset Summary
+            - Number of Rows: {df.shape[0]}
+            - Number of Columns: {df.shape[1]}
+            - Missing Values: {df.isnull().sum().sum()}
+            ## Statistical Summary
+            {df.describe().to_markdown()}
+            """
+            st.download_button("Download Report", report, file_name="report.md")
