@@ -260,7 +260,6 @@ if st.session_state['logged_in']:
                         min_value=1,
                         max_value=max_components,
                         value=min(3, max_components)
-                    )
                     
                     if st.button("Apply PCA"):
                         pca = PCA(n_components=n_components)
@@ -496,4 +495,47 @@ if st.session_state['logged_in']:
             ## Statistical Summary
             {df.describe().to_markdown()}
             """
+            
+            # Add Feature Importance to the Report
+            if st.session_state['model'] is not None and hasattr(st.session_state['model'], 'feature_importances_'):
+                model = st.session_state['model']
+                feature_importance = pd.DataFrame({
+                    'Feature': df.columns,
+                    'Importance': model.feature_importances_
+                }).sort_values('Importance', ascending=False)
+                report += f"""
+                ## Feature Importance
+                {feature_importance.to_markdown()}
+                """
+            
+            # Add Model Comparison to the Report
+            if st.session_state.get('model_comparison_results') is not None:
+                model_comparison_results = st.session_state['model_comparison_results']
+                report += f"""
+                ## Model Comparison Results
+                {model_comparison_results.to_markdown()}
+                """
+            
             st.download_button("Download Report", report, file_name="report.md")
+
+        # -------------------- Feature Importance Visualization --------------------
+        if st.session_state['model'] is not None and hasattr(st.session_state['model'], 'feature_importances_'):
+            st.subheader("Feature Importance")
+            model = st.session_state['model']
+            feature_importance = pd.DataFrame({
+                'Feature': df.columns,
+                'Importance': model.feature_importances_
+            }).sort_values('Importance', ascending=False)
+            
+            fig = px.bar(feature_importance, x='Importance', y='Feature', orientation='h', title="Feature Importance")
+            st.plotly_chart(fig)
+
+        # -------------------- Model Comparison --------------------
+        if st.session_state.get('model_comparison_results') is not None:
+            st.subheader("Model Comparison")
+            model_comparison_results = st.session_state['model_comparison_results']
+            st.dataframe(model_comparison_results)
+            
+            # Visualize Model Comparison
+            fig = px.bar(model_comparison_results, x='Model', y='Score', color='Model', title="Model Comparison Scores")
+            st.plotly_chart(fig)
