@@ -260,7 +260,7 @@ if st.session_state['logged_in']:
                         min_value=1,
                         max_value=max_components,
                         value=min(3, max_components)
-                    
+                    )
                     if st.button("Apply PCA"):
                         pca = PCA(n_components=n_components)
                         pca_features = pca.fit_transform(df[numeric_cols])
