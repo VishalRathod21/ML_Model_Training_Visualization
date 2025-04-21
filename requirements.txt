@@ -7,5 +7,7 @@ joblib
 plotly
 seaborn
 matplotlib
+nltk
+wordcloud
+google-generativeai
 scipy
-tabulate
