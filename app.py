@@ -22,7 +22,19 @@ from io import StringIO
 from scipy import stats
 import base64
 import warnings
-warnings.filterwarnings('ignore')
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Configure Gemini API
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    st.warning("GEMINI_API_KEY not found in environment variables. Please set it in your .env file.")
 
 # -------------------- App Configuration --------------------
 st.set_page_config(page_title="MLFlowX", page_icon="🤖", layout="wide")
@@ -84,7 +96,8 @@ if st.session_state['logged_in']:
         st.header("Navigation")
         app_page = st.radio("Go to", ["Data Upload", "Data Preprocessing", 
                                     "Feature Engineering", "Model Training", 
-                                    "Model Evaluation", "Deployment", "Export & Reporting"])
+                                    "Model Evaluation", "Deployment", "Export & Reporting",
+                                    "NLP", "Chatbot"])
 
     # -------------------- Data Upload Page --------------------
     if app_page == "Data Upload":
@@ -539,3 +552,226 @@ if st.session_state['logged_in']:
             # Visualize Model Comparison
             fig = px.bar(model_comparison_results, x='Model', y='Score', color='Model', title="Model Comparison Scores")
             st.plotly_chart(fig)
+
+    # -------------------- NLP Page --------------------
+    elif app_page == "NLP":
+        st.header("📝 Natural Language Processing")
+        
+        st.subheader("Text Analysis Tools")
+        nlp_task = st.selectbox("Select NLP Task", 
+            ["Text Classification", "Sentiment Analysis", "Text Summarization", 
+             "Named Entity Recognition", "Topic Modeling"])
+        
+        if nlp_task == "Text Classification":
+            st.write("Upload your text data for classification")
+            text_input = st.text_area("Enter text for classification")
+            if st.button("Classify"):
+                # Add text classification logic here
+                st.write("Classification results will appear here")
+        
+        elif nlp_task == "Sentiment Analysis":
+            st.write("Analyze sentiment of your text")
+            text_input = st.text_area("Enter text for sentiment analysis")
+            if st.button("Analyze"):
+                # Add sentiment analysis logic here
+                st.write("Sentiment analysis results will appear here")
+        
+        elif nlp_task == "Text Summarization":
+            st.write("Summarize your text")
+            text_input = st.text_area("Enter text to summarize")
+            if st.button("Summarize"):
+                # Add text summarization logic here
+                st.write("Summary will appear here")
+        
+        elif nlp_task == "Named Entity Recognition":
+            st.write("Extract named entities from text")
+            text_input = st.text_area("Enter text for NER")
+            if st.button("Extract Entities"):
+                # Add NER logic here
+                st.write("Named entities will appear here")
+        
+        elif nlp_task == "Topic Modeling":
+            st.write("Discover topics in your text corpus")
+            text_input = st.text_area("Enter multiple documents (one per line)")
+            if st.button("Model Topics"):
+                # Add topic modeling logic here
+                st.write("Topics will appear here")
+
+    # -------------------- Chatbot Page --------------------
+    elif app_page == "Chatbot":
+        st.header("🤖 Interactive Chatbot (Powered by Gemini)")
+        
+        # Initialize chat history and settings
+        if 'chat_history' not in st.session_state:
+            st.session_state.chat_history = []
+        if 'chat_settings' not in st.session_state:
+            st.session_state.chat_settings = {
+                'max_history': 10,
+                'temperature': 0.7,
+                'show_typing': True
+            }
+        
+        # Chat settings sidebar
+        with st.sidebar:
+            st.subheader("Chat Settings")
+            st.session_state.chat_settings['max_history'] = st.slider(
+                "Max Conversation History", 5, 50, 10,
+                help="Maximum number of messages to keep in history"
+            )
+            st.session_state.chat_settings['temperature'] = st.slider(
+                "Response Temperature", 0.0, 1.0, 0.7,
+                help="Higher values make responses more creative but less focused"
+            )
+            st.session_state.chat_settings['show_typing'] = st.toggle(
+                "Show Typing Indicator", True,
+                help="Display typing animation while waiting for response"
+            )
+            
+            # Conversation management
+            st.subheader("Conversation Management")
+            if st.button("Clear Conversation"):
+                st.session_state.chat_history = []
+                st.success("Conversation cleared!")
+            
+            # Export options
+            st.subheader("Export Options")
+            export_format = st.selectbox("Export Format", ["Text", "Markdown", "JSON"])
+            if st.button("Export Conversation"):
+                if export_format == "Text":
+                    chat_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.chat_history])
+                    st.download_button(
+                        label="Download as Text",
+                        data=chat_text,
+                        file_name="chat_history.txt",
+                        mime="text/plain"
+                    )
+                elif export_format == "Markdown":
+                    chat_md = "\n".join([f"**{msg['role']}**: {msg['content']}" for msg in st.session_state.chat_history])
+                    st.download_button(
+                        label="Download as Markdown",
+                        data=chat_md,
+                        file_name="chat_history.md",
+                        mime="text/markdown"
+                    )
+                else:  # JSON
+                    import json
+                    chat_json = json.dumps(st.session_state.chat_history, indent=2)
+                    st.download_button(
+                        label="Download as JSON",
+                        data=chat_json,
+                        file_name="chat_history.json",
+                        mime="application/json"
+                    )
+        
+        # Initialize Gemini model
+        if 'gemini_model' not in st.session_state:
+            if GEMINI_API_KEY:
+                try:
+                    # List available models
+                    available_models = genai.list_models()
+                    
+                    # Preferred model versions in order of preference
+                    preferred_models = [
+                        'gemini-1.5-flash',
+                        'gemini-1.5-pro',
+                        'gemini-pro',
+                        'gemini-pro-vision'
+                    ]
+                    
+                    # Find the first available preferred model
+                    model_name = None
+                    for preferred_model in preferred_models:
+                        for model in available_models:
+                            if preferred_model in model.name.lower():
+                                model_name = model.name
+                                break
+                        if model_name:
+                            break
+                    
+                    if model_name:
+                        st.session_state.gemini_model = genai.GenerativeModel(model_name)
+                        st.session_state.model_name = model_name
+                    else:
+                        st.error("No suitable Gemini model found. Please check your API access.")
+                        st.stop()
+                except Exception as e:
+                    st.error(f"Error initializing Gemini model: {str(e)}")
+                    st.stop()
+            else:
+                st.error("Gemini API key not configured. Please set GEMINI_API_KEY in your .env file.")
+                st.stop()
+        
+        # Display current model being used
+        if hasattr(st.session_state, 'model_name'):
+            st.info(f"Using model: {st.session_state.model_name}")
+        
+        # Display chat history with improved UI
+        for message in st.session_state.chat_history:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+                if "timestamp" in message:
+                    st.caption(message["timestamp"])
+        
+        # Chat input with improved UI
+        if prompt := st.chat_input("What would you like to know?"):
+            # Add user message to chat history with timestamp
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": prompt,
+                "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+            
+            # Display user message
+            with st.chat_message("user"):
+                st.write(prompt)
+            
+            # Generate and display assistant response
+            with st.chat_message("assistant"):
+                try:
+                    # Show typing indicator if enabled
+                    if st.session_state.chat_settings['show_typing']:
+                        with st.spinner("Thinking..."):
+                            # Create chat history context for Gemini
+                            chat_context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.chat_history])
+                            
+                            # Generate response using Gemini with temperature setting
+                            response = st.session_state.gemini_model.generate_content(
+                                chat_context,
+                                generation_config=genai.types.GenerationConfig(
+                                    temperature=st.session_state.chat_settings['temperature']
+                                )
+                            )
+                    else:
+                        # Create chat history context for Gemini
+                        chat_context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.chat_history])
+                        
+                        # Generate response using Gemini with temperature setting
+                        response = st.session_state.gemini_model.generate_content(
+                            chat_context,
+                            generation_config=genai.types.GenerationConfig(
+                                temperature=st.session_state.chat_settings['temperature']
+                            )
+                        )
+                    
+                    # Display the response
+                    st.write(response.text)
+                    
+                    # Add assistant response to chat history with timestamp
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": response.text,
+                        "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+                    })
+                    
+                    # Trim history if it exceeds max_history
+                    if len(st.session_state.chat_history) > st.session_state.chat_settings['max_history']:
+                        st.session_state.chat_history = st.session_state.chat_history[-st.session_state.chat_settings['max_history']:]
+                
+                except Exception as e:
+                    error_message = f"Error generating response: {str(e)}"
+                    st.error(error_message)
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": "Sorry, I encountered an error. Please try again.",
+                        "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+                    })
