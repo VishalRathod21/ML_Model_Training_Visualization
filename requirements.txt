@@ -11,3 +11,4 @@ nltk
 wordcloud
 google-generativeai
 scipy
+python-dotenv
